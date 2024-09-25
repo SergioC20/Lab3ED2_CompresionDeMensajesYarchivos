@@ -81,7 +81,6 @@ def manejar_compresion_automatica(mensaje):
     # Guardar los resultados en un archivo
     num_archivo = input("Introduce un número para el archivo de salida: ")
     with open(f"codificacion{num_archivo}.log", "w") as archivo:
-        archivo.write(f"------- Huffman Compresion Automatica -------\n")
         archivo.write(f"Mensaje original: {mensaje}\n")
         archivo.write(f"Mensaje codificado: {mensaje_codificado}\n")
         archivo.write(f"Tabla de frecuencias: {frecuencias}\n")
@@ -119,7 +118,6 @@ def manejar_compresion_no_automatica(mensaje):
         # Guardar los resultados en un archivo
         num_archivo = input("Introduce un número para el archivo de salida: ")
         with open(f"codificacion{num_archivo}.log", "w") as archivo:
-            archivo.write(f"------- Huffman Compresion No Automatica -------\n")
             archivo.write(f"Mensaje original: {mensaje}\n")
             archivo.write(f"Mensaje codificado: {mensaje_codificado}\n")
             archivo.write(f"Código de cada caracter: {codigos_huffman}\n")
@@ -129,17 +127,42 @@ def manejar_compresion_no_automatica(mensaje):
         print("Pasando a compresión automática...")
         manejar_compresion_automatica(mensaje)
 
-# Función principal
-def main():
-    mensaje = input("Introduce el mensaje a comprimir: ")
-    opcion = input("Selecciona el modo de compresión: 'automatica' o 'no automatica': ").strip().lower()
-    
-    if opcion == "automatica":
-        manejar_compresion_automatica(mensaje)
-    elif opcion == "no automatica":
-        manejar_compresion_no_automatica(mensaje)
-    else:
-        print("Opción no válida. Intenta de nuevo.")
+# Función para mostrar el submenú para Huffman
+def mostrar_submenu_huffman(mensaje):
+    while True:
+        print("\n--- Submenú Huffman ---")
+        print("1. Codificación automática")
+        print("2. Codificación no automática")
+        print("3. Volver al menú principal")
+        
+        opcion = input("Selecciona una opción: ").strip()
+        
+        if opcion == "1":
+            manejar_compresion_automatica(mensaje)
+        elif opcion == "2":
+            manejar_compresion_no_automatica(mensaje)
+        elif opcion == "3":
+            break
+        else:
+            print("Opción no válida. Intenta de nuevo.")
+
+# Función principal para mostrar el menú principal
+def mostrar_menu_principal():
+    while True:
+        print("\n--- Menú Principal ---")
+        print("1. Huffman")
+        print("2. Salir")
+        
+        opcion = input("Selecciona una opción: ").strip()
+        
+        if opcion == "1":
+            mensaje = input("Introduce el mensaje a comprimir: ")
+            mostrar_submenu_huffman(mensaje)
+        elif opcion == "2":
+            print("Saliendo del programa...")
+            break
+        else:
+            print("Opción no válida. Intenta de nuevo.")
 
 if __name__ == "__main__":
-    main()
+    mostrar_menu_principal()
