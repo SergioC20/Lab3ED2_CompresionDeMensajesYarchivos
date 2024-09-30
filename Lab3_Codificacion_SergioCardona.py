@@ -1,5 +1,6 @@
 import heapq
 import math
+import ast
 from collections import Counter
 
 # Nodo del árbol de Huffman
@@ -101,75 +102,6 @@ def int_arith_code(mensaje, k, frecuencias):
 
     return bits
 
-# Función para decodificar un mensaje
-def decodificar_mensaje_huffman(codigo_binario, raiz_huffman):
-    mensaje_decodificado = []
-    nodo_actual = raiz_huffman
-    
-    for bit in codigo_binario:
-        if bit == "0":
-            nodo_actual = nodo_actual.izq
-        else:
-            nodo_actual = nodo_actual.der
-        
-        # Si llegamos a una hoja, es un carácter
-        if nodo_actual.izq is None and nodo_actual.der is None:
-            mensaje_decodificado.append(nodo_actual.caracter)
-            nodo_actual = raiz_huffman  # Regresar a la raíz para el siguiente carácter
-    
-    return ''.join(mensaje_decodificado)
-
-# Función para leer el archivo log y obtener los datos de codificación
-def leer_datos_de_log(archivo_log):
-    frecuencias = {}
-    mensaje_codificado = ""
-
-    with open(archivo_log, "r", encoding='utf-8') as archivo:
-        modo_automatico = False
-        for linea in archivo:
-            linea = linea.strip()
-            if linea.startswith("Modo: Automático"):
-                modo_automatico = True
-            elif linea.startswith("Mensaje codificado:"):
-                mensaje_codificado = linea.split(": ")[1]
-            elif linea.startswith("Tabla de frecuencias:") and modo_automatico:
-                tabla_frecuencias = linea.split(": ")[1].strip('{}').split(', ')
-                for item in tabla_frecuencias:
-                    caracter, freq = item.split(": ")
-                    frecuencias[caracter.strip("'")] = int(freq)
-            elif linea.startswith("Código de cada caracter:") and not modo_automatico:
-                # En modo no automático no hay frecuencias, solo los códigos
-                tabla_codigos = linea.split(": ")[1].strip('{}').split(', ')
-                for item in tabla_codigos:
-                    caracter, _ = item.split(": ")
-                    frecuencias[caracter.strip("'")] = 1  # Crear un árbol binario igual para todos los caracteres
-    
-    return mensaje_codificado, frecuencias
-
-# Función para manejar la descompresión
-def manejar_descompresion_huffman():
-    archivo_log = input("Introduce el nombre del archivo de log para descomprimir (incluye la extensión .log): ")
-    
-    try:
-        # Leer los datos del archivo log
-        mensaje_codificado, frecuencias = leer_datos_de_log(archivo_log)
-        
-        if not mensaje_codificado or not frecuencias:
-            raise ValueError("El archivo de log no contiene datos válidos.")
-        
-        # Reconstruir el árbol de Huffman
-        raiz_huffman = construir_arbol_huffman(frecuencias)
-        
-        # Decodificar el mensaje
-        mensaje_decodificado = decodificar_mensaje_huffman(mensaje_codificado, raiz_huffman)
-        
-        print("\n--- Descompresión ---")
-        print("Mensaje decodificado:", mensaje_decodificado)
-    
-    except FileNotFoundError:
-        print(f"Error: El archivo '{archivo_log}' no fue encontrado.")
-    except Exception as e:
-        print(f"Error: {e}")
 
 # Función para manejar la compresión automática
 def manejar_compresion_automatica_huffman(mensaje=None):
@@ -200,44 +132,54 @@ def manejar_compresion_automatica_huffman(mensaje=None):
     # Guardar los resultados en un archivo
     num_archivo = input("Introduce un número para el archivo de salida: ")
     with open(f"codificacion{num_archivo}.log", "w", encoding='utf-8') as archivo:
-        archivo.write("Metodo: Huffman\n")
+        archivo.write("Método: Huffman\n")
         archivo.write("Modo: Automático\n")
         archivo.write(f"Mensaje original: {mensaje}\n")
+        archivo.write(f"Mensaje codificado: {mensaje_codificado}\n")
         archivo.write(f"Tabla de frecuencias: {frecuencias}\n")
         archivo.write(f"Probabilidad de cada caracter: {probabilidades}\n")
         archivo.write(f"Código de cada caracter: {codigos_huffman}\n")
         archivo.write(f"Tasa de compresión: {len(mensaje_codificado) / (len(mensaje) * 8)}\n")
-        archivo.write(f"Mensaje codificado: {mensaje_codificado}\n")
+        
 
 
 # Función para manejar la compresión no automática
 def manejar_compresion_no_automatica_huffman():
     mensaje = input("Introduce el mensaje a comprimir: ")
     print("Introduce la tabla de frecuencias (carácter y frecuencia separados por espacio, una línea por carácter).")
+    print("Nota: Para el espacio, ingresa 'espacio' seguido de su frecuencia (ejemplo: 'espacio 1').")
     print("Cuando termines, escribe 'fin'.")
     frecuencias_usuario = {}
-    
+
     # Leer la tabla de frecuencias ingresada por el usuario
     while True:
         entrada = input().strip()
         if entrada.lower() == 'fin':
             break
         
-        # Validación: asegurar que se ingresen tanto el carácter como la frecuencia
+        # Validación de que se ingresen dos valores separados (carácter y frecuencia)
         if len(entrada.split()) != 2:
             print("Error: Debes ingresar un carácter seguido de su frecuencia. Ejemplo: 'a 3'. Inténtalo de nuevo.")
             continue
 
+        # Manejo del carácter de espacio
+        partes = entrada.split()
+        caracter, frecuencia_str = partes[0], partes[1]
+
+        # Si se ingresa 'espacio', lo convertimos a un espacio real
+        if caracter == 'espacio':
+            caracter = ' '
+
         try:
-            caracter, frecuencia = entrada.split()
-            frecuencias_usuario[caracter] = int(frecuencia)
+            frecuencia = int(frecuencia_str)
+            frecuencias_usuario[caracter] = frecuencia
         except ValueError:
             print("Error: Debes ingresar un número válido para la frecuencia. Inténtalo de nuevo.")
             continue
 
     # Validar si las frecuencias ingresadas coinciden con las frecuencias reales en el mensaje
     frecuencias_reales = Counter(mensaje)
-    
+
     # Validar que todos los caracteres en el mensaje estén en la tabla de frecuencias
     for caracter, frecuencia_real in frecuencias_reales.items():
         if caracter not in frecuencias_usuario:
@@ -275,16 +217,59 @@ def manejar_compresion_no_automatica_huffman():
         # Guardar los resultados en un archivo
         num_archivo = input("Introduce un número para el archivo de salida: ")
         with open(f"codificacion{num_archivo}.log", "w", encoding='utf-8') as archivo:
-            archivo.write("Metodo: Huffman\n")
+            archivo.write("Método: Huffman\n")
             archivo.write("Modo: No Automático\n")
             archivo.write(f"Mensaje original: {mensaje}\n")
-            archivo.write(f"Código de cada caracter: {codigos_huffman}\n")
             archivo.write(f"Mensaje codificado: {mensaje_codificado}\n")
-    
+            archivo.write(f"Código de cada caracter: {codigos_huffman}\n")
+
     except ValueError as e:
         print(f"Error: {e}")
         print("Pasando a compresión automática...")
         manejar_compresion_automatica_huffman(mensaje)
+
+
+def decodificar_huffman(mensaje_codificado, codigos):
+    mensaje_decodificado = ""
+    codigo_actual = ""
+    
+    for bit in mensaje_codificado:
+        codigo_actual += bit
+        for caracter, codigo in codigos.items():
+            if codigo == codigo_actual:
+                mensaje_decodificado += caracter
+                codigo_actual = ""
+                break
+    
+    return mensaje_decodificado
+
+def decodificar_huffman_desde_archivo():
+    nombre_archivo = input("Introduce el nombre del archivo .log: ")
+    try:
+        with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+            contenido = archivo.read()
+        
+        datos = {}
+        for linea in contenido.split('\n'):
+            if ': ' in linea:
+                clave, valor = linea.split(': ', 1)
+                datos[clave] = valor
+        
+        mensaje_codificado = datos.get('Mensaje codificado')
+        codigos = ast.literal_eval(datos.get('Código de cada caracter', '{}'))
+        
+        if not mensaje_codificado or not codigos:
+            print("Error: No se encontró la información necesaria en el archivo.")
+            return
+        
+        mensaje_decodificado = decodificar_huffman(mensaje_codificado, codigos)
+        print("Mensaje decodificado:", mensaje_decodificado)
+    except FileNotFoundError:
+        print(f"Error: No se encontró el archivo '{nombre_archivo}'.")
+    except Exception as e:
+        print(f"Error al procesar el archivo: {e}")
+
+
 
 def manejar_compresion_automatica_aritmetica(mensaje=None):
     # Si no se pasa un mensaje (es None), pedimos al usuario que lo introduzca
@@ -306,7 +291,7 @@ def manejar_compresion_automatica_aritmetica(mensaje=None):
 
     # Mostrar los resultados
     print("\n--- Compresión Aritmética Automática ---")
-    print("Mensaje codificado (en bits):", ''.join(map(str, bits_codificados)))
+    print("Mensaje codificado:", ''.join(map(str, bits_codificados)))
     print("Tabla de frecuencias:", frecuencias)
     print(f"k (bits por carácter): {k}")
     print(f"T (total de frecuencias): {T}")
@@ -316,7 +301,8 @@ def manejar_compresion_automatica_aritmetica(mensaje=None):
     # Guardar los resultados en un archivo
     num_archivo = input("Introduce un número para el archivo de salida: ")
     with open(f"codificacion{num_archivo}.log", "w", encoding='utf-8') as archivo:
-        archivo.write("Método: Aritmética con Enteros\n")
+        archivo.write("Método: Aritmética\n")
+        archivo.write("Modo: Automático\n")
         archivo.write(f"Mensaje original: {mensaje}\n")
         archivo.write(f"Mensaje codificado (en bits): {''.join(map(str, bits_codificados))}\n")
         archivo.write(f"Tabla de frecuencias: {frecuencias}\n")
@@ -328,6 +314,7 @@ def manejar_compresion_automatica_aritmetica(mensaje=None):
 def manejar_compresion_no_automatica_aritmetica():
     mensaje = input("Introduce el mensaje a comprimir: ")
     print("Introduce la tabla de frecuencias (carácter y frecuencia separados por espacio, una línea por carácter).")
+    print("Nota: Para el espacio, ingresa 'espacio' seguido de su frecuencia (ejemplo: 'espacio 1').")
     print("Cuando termines, escribe 'fin'.")
     frecuencias_usuario = {}
 
@@ -338,21 +325,27 @@ def manejar_compresion_no_automatica_aritmetica():
             break
         
         # Validación de que se ingresen dos valores separados (carácter y frecuencia)
-        if len(entrada.split()) != 2:
+        partes = entrada.split()
+        if len(partes) != 2:
             print("Error: Debes ingresar un carácter seguido de su frecuencia. Ejemplo: 'a 3'. Inténtalo de nuevo.")
             continue
 
-        # Manejo especial para el espacio
+        caracter, frecuencia_str = partes[0], partes[1]
+
+        # Manejo del carácter de espacio
+        if caracter == 'espacio':
+            caracter = ' '  # Convertimos 'espacio' a un espacio real
+
         try:
-            caracter, frecuencia = entrada.split()
-            frecuencias_usuario[caracter] = int(frecuencia)
+            frecuencia = int(frecuencia_str)
+            frecuencias_usuario[caracter] = frecuencia
         except ValueError:
             print("Error: Debes ingresar un número válido para la frecuencia. Inténtalo de nuevo.")
             continue
 
     # Verificar si las frecuencias ingresadas coinciden con las frecuencias reales en el mensaje
     frecuencias_reales = Counter(mensaje)
-    
+
     # Validar que todos los caracteres en el mensaje estén en la tabla de frecuencias
     for caracter, frecuencia_real in frecuencias_reales.items():
         if caracter not in frecuencias_usuario:
@@ -406,7 +399,8 @@ def manejar_compresion_no_automatica_aritmetica():
     # Guardar los resultados en un archivo
     num_archivo = input("Introduce un número para el archivo de salida: ")
     with open(f"codificacion{num_archivo}.log", "w", encoding='utf-8') as archivo:
-        archivo.write("Método: Aritmética No Automática con Enteros\n")
+        archivo.write("Método: Aritmética\n")
+        archivo.write("Modo: No Automático\n")
         archivo.write(f"Mensaje original: {mensaje}\n")
         archivo.write(f"Mensaje codificado (en bits): {''.join(map(str, bits_codificados))}\n")
         archivo.write(f"Tabla de frecuencias: {frecuencias_usuario}\n")
@@ -416,13 +410,14 @@ def manejar_compresion_no_automatica_aritmetica():
         archivo.write(f"Tasa de compresión: {tasa_compresion}\n")
 
 
+
 # Función para mostrar el submenú para Huffman
 def mostrar_submenu_huffman():
     while True:
         print("\n--- Submenú Huffman ---")
         print("1. Codificación automática")
         print("2. Codificación no automática")
-        print("3. Descompresión")
+        print("3. Decodificación")
         print("4. Volver al menú principal")
         
         opcion = input("Selecciona una opción: ").strip()
@@ -432,9 +427,9 @@ def mostrar_submenu_huffman():
         elif opcion == "2":
             manejar_compresion_no_automatica_huffman()
         elif opcion == "3":
-            manejar_descompresion_huffman()
+            decodificar_huffman_desde_archivo()
         elif opcion == "4":
-            break
+             break 
         else:
             print("Opción no válida. Intenta de nuevo.")
 
