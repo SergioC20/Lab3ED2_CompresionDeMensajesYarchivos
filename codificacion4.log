@@ -1,0 +1,9 @@
+Método: Aritmética
+Modo: No Automático
+Mensaje original: esa es
+Mensaje codificado (en bits): 0011001101111
+Tabla de frecuencias: {'e': 2, 's': 2, 'a': 1, ' ': 1}
+k (bits por carácter): 24
+T (total de frecuencias): 6
+n (longitud del mensaje): 6
+Tasa de compresión: 0.2708333333333333

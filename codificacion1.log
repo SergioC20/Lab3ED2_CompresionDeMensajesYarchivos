@@ -1,0 +1,8 @@
+Método: Huffman
+Modo: Automático
+Mensaje original: hola tu
+Mensaje codificado: 10100011111110100010
+Tabla de frecuencias: Counter({'h': 1, 'o': 1, 'l': 1, 'a': 1, ' ': 1, 't': 1, 'u': 1})
+Probabilidad de cada caracter: {'h': 0.14285714285714285, 'o': 0.14285714285714285, 'l': 0.14285714285714285, 'a': 0.14285714285714285, ' ': 0.14285714285714285, 't': 0.14285714285714285, 'u': 0.14285714285714285}
+Código de cada caracter: {'o': '00', 'u': '010', 'l': '011', 't': '100', 'h': '101', ' ': '110', 'a': '111'}
+Tasa de compresión: 0.35714285714285715

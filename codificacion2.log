@@ -1,0 +1,5 @@
+Método: Huffman
+Modo: No Automático
+Mensaje original: hola tu
+Mensaje codificado: 10100011111110100010
+Código de cada caracter: {'o': '00', 'u': '010', 'l': '011', 't': '100', 'h': '101', ' ': '110', 'a': '111'}

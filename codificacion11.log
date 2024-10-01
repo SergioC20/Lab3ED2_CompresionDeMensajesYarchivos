@@ -1,0 +1,8 @@
+Método: Huffman
+Modo: Automático
+Mensaje original: A BB CCC
+Mensaje codificado: 0010010110111111
+Tabla de frecuencias: Counter({'C': 3, ' ': 2, 'B': 2, 'A': 1})
+Probabilidad de cada caracter: {'A': 0.125, ' ': 0.25, 'B': 0.25, 'C': 0.375}
+Código de cada caracter: {'H': '000', 'M': '001', 'a': '010', 'n': '011', 'd': '100', 'o': '101', '!': '1100', ' ': '10', 'u': '1110', 'l': '1111', 'C': '11', 'A': '00', 'B': '01'}
+Tasa de compresión: 0.25

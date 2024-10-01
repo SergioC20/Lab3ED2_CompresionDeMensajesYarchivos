@@ -1,0 +1,5 @@
+Método: Huffman
+Modo: No Automático
+Mensaje original: A BB CCC
+Mensaje codificado: 0001101001111111
+Código de cada caracter: {'H': '000', 'M': '001', 'a': '010', 'n': '011', 'd': '100', 'o': '101', '!': '1100', ' ': '01', 'u': '1110', 'l': '1111', 'C': '11', 'A': '00', 'B': '10'}

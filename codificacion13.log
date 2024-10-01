@@ -1,0 +1,9 @@
+Método: Aritmética
+Modo: No Automático
+Mensaje original: XY 1
+Mensaje codificado (en bits): 0001101101
+Tabla de frecuencias: {'X': 1, 'Y': 1, ' ': 1, '1': 1}
+k (bits por carácter): 16
+T (total de frecuencias): 4
+n (longitud del mensaje): 4
+Tasa de compresión: 0.3125
