@@ -1,6 +1,7 @@
 import heapq
 import math
 import ast
+import re
 from collections import Counter
 
 # Nodo del árbol de Huffman
@@ -43,6 +44,10 @@ def generar_codigos_huffman(nodo, codigo_actual="", codigos={}):
 def write_bit(bit, bits):
     bits.append(bit)
 
+def read_bit(bits, index):
+    if index < len(bits):
+        return int(bits[index]), index + 1
+    return None, index
 
 def int_arith_code(mensaje, k, frecuencias):
     T = sum(frecuencias.values()) #total de frecuencias
@@ -101,7 +106,58 @@ def int_arith_code(mensaje, k, frecuencias):
         write_bit(1, bits)
 
     return bits
-
+def int_arith_decode(mensaje_codificado, k, n, frecuencias):
+    R = 2 ** k
+    l, u = 0, R - 1
+    T = sum(frecuencias.values())
+    mensaje_decodificado = []
+    
+    # Construir los límites f(i) y f(i+1)
+    limites = {}
+    acumulado = 0
+    for simbolo, frecuencia in frecuencias.items():
+        limites[simbolo] = (acumulado, acumulado + frecuencia)
+        acumulado += frecuencia
+    
+    # Convertir el mensaje codificado de string a un número entero
+    codigo = int(mensaje_codificado, 2)
+    
+    for _ in range(n):
+        s = u - l + 1
+        valor = ((codigo - l + 1) * T - 1) // s
+        
+        # Encontrar el símbolo que corresponde al valor actual
+        for simbolo, (f_i, f_i_plus_1) in limites.items():
+            if f_i <= valor < f_i_plus_1:
+                mensaje_decodificado.append(simbolo)
+                u = l + (s * f_i_plus_1) // T - 1
+                l = l + (s * f_i) // T
+                break
+        
+        # Renormalización (ajuste de los intervalos)
+        while True:
+            # Si el rango completo se encuentra en la primera mitad
+            if u < R // 2:
+                l = 2 * l
+                u = 2 * u + 1
+                codigo = 2 * codigo
+            # Si el rango completo se encuentra en la segunda mitad
+            elif l >= R // 2:
+                l = 2 * (l - R // 2)
+                u = 2 * (u - R // 2) + 1
+                codigo = 2 * (codigo - R // 2)
+            # Si el rango está cerca del centro (renormalización en el tercer cuarto)
+            elif l >= R // 4 and u < 3 * R // 4:
+                l = 2 * (l - R // 4)
+                u = 2 * (u - R // 4) + 1
+                codigo = 2 * (codigo - R // 4)
+            else:
+                break
+            
+            # Esto asegura que el valor de `codigo` no exceda el tamaño de R
+            codigo %= R
+    
+    return ''.join(mensaje_decodificado)
 
 # Función para manejar la compresión automática
 def manejar_compresion_automatica_huffman(mensaje=None):
@@ -409,6 +465,39 @@ def manejar_compresion_no_automatica_aritmetica():
         archivo.write(f"n (longitud del mensaje): {n}\n")
         archivo.write(f"Tasa de compresión: {tasa_compresion}\n")
 
+def parse_counter(counter_string):
+    pairs = re.findall(r"'(.)':\s*(\d+)", counter_string)
+    return {key: int(value) for key, value in pairs}
+
+def decodificar_aritmetica_desde_archivo():
+    nombre_archivo = input("Introduce el nombre del archivo .log: ")
+    try:
+        with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+            contenido = archivo.read()
+        
+        datos = {}
+        for linea in contenido.split('\n'):
+            if ': ' in linea:
+                clave, valor = linea.split(': ', 1)
+                datos[clave] = valor
+        
+        mensaje_codificado = datos.get('Mensaje codificado (en bits)')
+        k = int(datos.get('k (bits por carácter)'))
+        n = int(datos.get('n (longitud del mensaje)'))
+        frecuencias = parse_counter(datos.get('Tabla de frecuencias', ''))
+        
+        if not all([mensaje_codificado, k, n, frecuencias]):
+            print("Error: No se encontró toda la información necesaria en el archivo.")
+            return
+        
+        mensaje_decodificado = int_arith_decode(mensaje_codificado, k, n, frecuencias)
+        print("Mensaje decodificado:", mensaje_decodificado)
+    except FileNotFoundError:
+        print(f"Error: No se encontró el archivo '{nombre_archivo}'.")
+    except Exception as e:
+        print(f"Error al procesar el archivo: {e}")
+        import traceback
+        traceback.print_exc()  # Esto imprimirá el traceback completo para depuración
 
 
 # Función para mostrar el submenú para Huffman
@@ -440,7 +529,8 @@ def mostrar_submenu_aritmetica():
         print("\n--- Submenú Aritmética ---")
         print("1. Codificación automática")
         print("2. Codificación no automática")
-        print("3. Volver al menú principal")
+        print("3. Decodificación")
+        print("4. Volver al menú principal")
         
         
         opcion = input("Selecciona una opción: ").strip()
@@ -450,6 +540,8 @@ def mostrar_submenu_aritmetica():
         elif opcion == "2":
             manejar_compresion_no_automatica_aritmetica()
         elif opcion == "3":
+            decodificar_aritmetica_desde_archivo()
+        elif opcion == "4":
             break
         else:
             print("Opción no válida. Intenta de nuevo.")
